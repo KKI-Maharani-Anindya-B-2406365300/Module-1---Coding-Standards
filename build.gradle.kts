@@ -41,6 +41,41 @@ dependencies {
     testImplementation("org.seleniumhq.selenium:selenium-java:${seleniumJavaVersion}")
     testImplementation("io.github.bonigarcia:selenium-jupiter:${seleniumJupiterVersion}")
     testImplementation("io.github.bonigarcia:webdrivermanager:${webdrivermanagerVersion}")
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
+}
+
+tasks.register<Test>("unitTest") {
+    description = "Runs unit tests."
+    group = "verification"
+
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
+
+    useJUnitPlatform()
+}
+
+tasks.register<Test>("functionalTest") {
+    description = "Runs functional tests."
+    group = "verification"
+
+    filter {
+        includeTestsMatching("*FunctionalTest")
+    }
+
+    useJUnitPlatform()
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
 }
