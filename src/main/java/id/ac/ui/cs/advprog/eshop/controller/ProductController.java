@@ -8,6 +8,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+
 
 @Controller
 @RequestMapping("/product")
@@ -31,7 +35,10 @@ public class ProductController {
 
     @GetMapping("/list")
     public String productListPage(Model model) {
-        List<Product> allProducts = service.findAll();
+        Iterator<Product> it = service.findAll();
+        List<Product> allProducts = new ArrayList<>();
+        it.forEachRemaining(allProducts::add);
+
         model.addAttribute("products", allProducts);
         return "productList";
     }
@@ -46,7 +53,7 @@ public class ProductController {
 
     @PostMapping("/edit")
     public String editProductPost(@ModelAttribute Product product) {
-        service.update(product);
+        service.update(product.getProductId(), product);
         return "redirect:/product/list";
     }
 

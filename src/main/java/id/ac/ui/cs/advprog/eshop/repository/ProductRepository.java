@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.eshop.model.Product;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Repository
@@ -15,36 +16,11 @@ public class ProductRepository {
         return product;
     }
 
-    public List<Product> findAll() {
-        return new ArrayList<>(productData);
+    // TESTS EXPECT Iterator<Product>
+    public Iterator<Product> findAll() {
+        return productData.iterator();
     }
 
-    public Product findById(String productId) {
-        for (Product p : productData) {
-            if (p.getProductId() != null && p.getProductId().equals(productId)) {
-                return p;
-            }
-        }
-        return null;
-    }
-
-    public boolean update(Product updated) {
-        if (updated == null || updated.getProductId() == null) return false;
-
-        for (int i = 0; i < productData.size(); i++) {
-            if (updated.getProductId().equals(productData.get(i).getProductId())) {
-                productData.set(i, updated);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean deleteById(String productId) {
-        return productData.removeIf(p ->
-                p.getProductId() != null && p.getProductId().equals(productId)
-        );
-    }
     public Product findById(String id) {
         for (Product p : productData) {
             if (p.getProductId() != null && p.getProductId().equals(id)) {
@@ -55,6 +31,8 @@ public class ProductRepository {
     }
 
     public Product update(String id, Product updatedProduct) {
+        if (updatedProduct == null) return null;
+
         Product existing = findById(id);
         if (existing == null) return null;
 
@@ -64,10 +42,10 @@ public class ProductRepository {
     }
 
     public boolean deleteById(String id) {
-        Product existing = findById(id);
-        if (existing == null) return false;
-
-        return productData.remove(existing);
+        return productData.removeIf(p ->
+                p.getProductId() != null && p.getProductId().equals(id)
+        );
     }
 }
+
 
