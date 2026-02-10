@@ -11,7 +11,6 @@
 
 <body>
 <div class="container my-2">
-
   <h2>Product List</h2>
 
   <a th:href="@{/product/create}" class="btn btn-primary btn-sm mb-3">
@@ -23,7 +22,7 @@
     <tr>
       <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
-      <th scope="col">Options</th>
+      <th scope="col">Actions</th>
     </tr>
     </thead>
 
@@ -33,14 +32,24 @@
       <td th:text="${product.productQuantity}"></td>
       <td>
         <a th:href="@{'/product/edit/' + ${product.productId}}"
-           class="btn btn-primary btn-sm">
+           class="btn btn-primary btn-sm mr-2">
           Edit
         </a>
+
+        <form th:action="@{'/product/delete/' + ${product.productId}}"
+              method="post"
+              style="display:inline;">
+          <button type="submit"
+                  class="btn btn-primary btn-sm"
+                  onclick="return confirm('Delete this product?');">
+            Delete
+          </button>
+        </form>
       </td>
     </tr>
     </tbody>
-
   </table>
 </div>
 </body>
 </html>
+

@@ -39,5 +39,11 @@ public class ProductRepository {
         }
         return false;
     }
+
+    public boolean deleteById(String productId) {
+        return productData.removeIf(p ->
+                p.getProductId() != null && p.getProductId().equals(productId)
+        );
+    }
 }
 
