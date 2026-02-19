@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.5.10"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -44,10 +45,6 @@ dependencies {
     testImplementation("io.github.bonigarcia:webdrivermanager:${webdrivermanagerVersion}")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 tasks.register<Test>("unitTest") {
     description = "Runs unit tests."
     group = "verification"
@@ -69,6 +66,21 @@ tasks.register<Test>("functionalTest") {
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
+
+tasks.test {
+    useJUnitPlatform()
+
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
+
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+}
+
 
 
 
