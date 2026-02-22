@@ -11,4 +11,9 @@ class EshopApplicationTests {
     @Test
     void contextLoads() {
     }
+
+    @Test
+    void main_shouldRunWithoutThrowing() {
+        assertDoesNotThrow(() -> EshopApplication.main(new String[]{}));
+    }
 }
