@@ -29,18 +29,15 @@ class ProductControllerTest {
         ProductController controller = new ProductController();
         fakeService = new FakeProductService();
 
-        // Inject fake service into controller (controller has @Autowired private ProductService service)
         Field f = ProductController.class.getDeclaredField("service");
         f.setAccessible(true);
         f.set(controller, fakeService);
 
-        // Dummy view so tests don't require real Thymeleaf templates
         View dummyView = new AbstractView() {
             @Override
             protected void renderMergedOutputModel(Map<String, Object> model,
                                                    HttpServletRequest request,
                                                    HttpServletResponse response) {
-                // do nothing
             }
         };
 
@@ -71,7 +68,6 @@ class ProductControllerTest {
                         .param("productName", "Item A")
                         .param("productQuantity", "10"))
                 .andExpect(status().is3xxRedirection())
-                // controller returns "redirect:list"
                 .andExpect(redirectedUrl("list"));
 
         assertEquals(1, fakeService.createdProducts.size());
@@ -104,7 +100,6 @@ class ProductControllerTest {
     void editProductPage_shouldRedirect_whenProductNotFound() throws Exception {
         mockMvc.perform(get("/product/edit/does-not-exist"))
                 .andExpect(status().is3xxRedirection())
-                // controller returns "redirect:/product/list"
                 .andExpect(redirectedUrl("/product/list"));
     }
 
@@ -136,7 +131,6 @@ class ProductControllerTest {
                         .param("productName", "After")
                         .param("productQuantity", "7"))
                 .andExpect(status().is3xxRedirection())
-                // controller returns "redirect:/product/list"
                 .andExpect(redirectedUrl("/product/list"));
 
         assertEquals("99", fakeService.lastUpdateId);
@@ -149,13 +143,11 @@ class ProductControllerTest {
     void deleteProduct_shouldCallServiceDelete_andRedirect() throws Exception {
         mockMvc.perform(post("/product/delete/123"))
                 .andExpect(status().is3xxRedirection())
-                // controller returns "redirect:/product/list"
                 .andExpect(redirectedUrl("/product/list"));
 
         assertEquals("123", fakeService.lastDeletedId);
     }
 
-    // ---- Fake service (no Mockito) ----
     static class FakeProductService implements ProductService {
         Map<String, Product> storage = new LinkedHashMap<>();
         List<Product> createdProducts = new ArrayList<>();
