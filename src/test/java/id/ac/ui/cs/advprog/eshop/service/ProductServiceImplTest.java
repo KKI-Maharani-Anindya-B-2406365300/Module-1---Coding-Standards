@@ -102,4 +102,43 @@ class ProductServiceImplTest {
         boolean deleted = service.deleteById("unknown");
         assertFalse(deleted);
     }
+    @Test
+    void findAll_shouldReturnAllProducts() {
+        Product p1 = new Product();
+        p1.setProductId("id-10");
+        p1.setProductName("A");
+        p1.setProductQuantity(1);
+
+        Product p2 = new Product();
+        p2.setProductId("id-20");
+        p2.setProductName("B");
+        p2.setProductQuantity(2);
+
+        service.create(p1);
+        service.create(p2);
+
+        var it = service.findAll();
+
+        java.util.List<Product> list = new java.util.ArrayList<>();
+        it.forEachRemaining(list::add);
+
+        assertEquals(2, list.size());
+        assertEquals("id-10", list.get(0).getProductId());
+        assertEquals("id-20", list.get(1).getProductId());
+    }
+
+    @Test
+    void findById_shouldReturnNull_whenNotFound() {
+        assertNull(service.findById("does-not-exist"));
+    }
+
+    @Test
+    void update_shouldReturnNull_whenProductDoesNotExist() {
+        Product updated = new Product();
+        updated.setProductName("New");
+        updated.setProductQuantity(99);
+
+        assertNull(service.update("missing-id", updated));
+    }
+
 }
