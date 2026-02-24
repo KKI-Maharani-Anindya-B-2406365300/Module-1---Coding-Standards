@@ -31,10 +31,14 @@ public class ProductRepository {
     }
 
     public Product update(String id, Product updatedProduct) {
-        if (updatedProduct == null) return null;
+        if (updatedProduct == null) {
+            return null;
+        }
 
         Product existing = findById(id);
-        if (existing == null) return null;
+        if (existing == null) {
+            return null;
+        }
 
         existing.setProductName(updatedProduct.getProductName());
         existing.setProductQuantity(updatedProduct.getProductQuantity());
