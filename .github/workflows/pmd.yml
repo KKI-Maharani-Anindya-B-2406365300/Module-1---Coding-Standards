@@ -1,35 +1,28 @@
-name: PMD (Static Analysis)
+name: PMD Code Analysis
 
 on:
   push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   pmd:
-    runs-on: ubuntu-22.04
+    name: Run PMD
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Download PMD 7.0.0-rc4
-        run: |
-          curl -L -o pmd.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0-rc4/pmd-dist-7.0.0-rc4-bin.zip
-          unzip -q pmd.zip -d pmd
+          java-version: '21'
+          distribution: 'temurin'
 
       - name: Run PMD
-        run: |
-          PMD_BIN=$(find pmd -type f -name pmd -o -name pmd.bat | head -n 1)
-          chmod +x "$PMD_BIN" || true
-
-          # Run PMD on your production code
-          pmd/pmd-bin-7.0.0-rc4/bin/pmd check \
-            --dir src/main/java \
-            --rulesets rulesets/java/quickstart.xml \
-            --format text \
-            --fail-on-violation
+        uses: pmd/pmd-github-action@v2
+        with:
+          version: '7.0.0-rc4'
+          sourcePath: 'src/main/java'
+          rulesets: 'rulesets/java/quickstart.xml'
+          analyzeModifiedFilesOnly: false
