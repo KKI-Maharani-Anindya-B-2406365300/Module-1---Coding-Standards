@@ -1,30 +1,23 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM docker.io/library/eclipse-temurin:21-jdk-alpine AS builder
 
-WORKDIR /app
+WORKDIR /src/advshop
+COPY . .
+RUN ./gradlew clean bootJar
 
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
+FROM docker.io/library/eclipse-temurin:21-jre-alpine AS runner
 
-RUN chmod +x gradlew
+ARG USER_NAME=advshop
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
 
-RUN ./gradlew dependencies --no-daemon || true
+RUN addgroup -g ${USER_GID} ${USER_NAME} \
+    && adduser -h /opt/advshop -D -u ${USER_UID} -G ${USER_NAME} ${USER_NAME}
 
-COPY src src
-
-RUN ./gradlew clean bootJar --no-daemon
-
-FROM eclipse-temurin:21-jre-alpine AS runner
-
-
-RUN addgroup -S spring && adduser -S spring -G spring
-
-USER spring
-WORKDIR /app
-
-COPY --from=builder /app/build/libs/*.jar app.jar
+USER ${USER_NAME}
+WORKDIR /opt/advshop
+COPY --from=builder --chown=${USER_UID}:${USER_GID} /src/advshop/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java"]
+CMD ["-jar", "app.jar"]
