@@ -5,8 +5,6 @@ import id.ac.ui.cs.advprog.eshop.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProductServiceImplTest {
@@ -15,13 +13,9 @@ class ProductServiceImplTest {
     private ProductRepository repo;
 
     @BeforeEach
-    void setUp() throws Exception {
-        service = new ProductServiceImpl();
+    void setUp() {
         repo = new ProductRepository();
-
-        Field f = ProductServiceImpl.class.getDeclaredField("productRepository");
-        f.setAccessible(true);
-        f.set(service, repo);
+        service = new ProductServiceImpl(repo);
     }
 
     @Test
@@ -73,35 +67,36 @@ class ProductServiceImplTest {
         service.create(p);
 
         Product updated = new Product();
+        updated.setProductId("id-1"); // optional, but safe
         updated.setProductName("New");
         updated.setProductQuantity(99);
 
-        Product result = service.update("id-1", updated);
+        service.update("id-1", updated);
 
+        Product result = service.findById("id-1");
         assertNotNull(result);
         assertEquals("New", result.getProductName());
         assertEquals(99, result.getProductQuantity());
     }
 
     @Test
-    void deleteById_shouldReturnTrue_whenProductExists() {
+    void deleteProductById_shouldRemoveProduct_whenProductExists() {
         Product p = new Product();
         p.setProductId("id-2");
         p.setProductName("X");
         p.setProductQuantity(2);
         service.create(p);
 
-        boolean deleted = service.deleteById("id-2");
+        service.deleteProductById("id-2");
 
-        assertTrue(deleted);
         assertNull(service.findById("id-2"));
     }
 
     @Test
-    void deleteById_shouldReturnFalse_whenProductDoesNotExist() {
-        boolean deleted = service.deleteById("unknown");
-        assertFalse(deleted);
+    void deleteProductById_shouldNotCrash_whenProductDoesNotExist() {
+        assertDoesNotThrow(() -> service.deleteProductById("unknown"));
     }
+
     @Test
     void findAll_shouldReturnAllProducts() {
         Product p1 = new Product();
@@ -117,10 +112,7 @@ class ProductServiceImplTest {
         service.create(p1);
         service.create(p2);
 
-        var it = service.findAll();
-
-        java.util.List<Product> list = new java.util.ArrayList<>();
-        it.forEachRemaining(list::add);
+        var list = service.findAll();
 
         assertEquals(2, list.size());
         assertEquals("id-10", list.get(0).getProductId());
@@ -131,14 +123,4 @@ class ProductServiceImplTest {
     void findById_shouldReturnNull_whenNotFound() {
         assertNull(service.findById("does-not-exist"));
     }
-
-    @Test
-    void update_shouldReturnNull_whenProductDoesNotExist() {
-        Product updated = new Product();
-        updated.setProductName("New");
-        updated.setProductQuantity(99);
-
-        assertNull(service.update("missing-id", updated));
-    }
-
 }

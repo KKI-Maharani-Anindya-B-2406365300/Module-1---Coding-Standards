@@ -35,12 +35,14 @@
           Edit
         </a>
 
-        <form th:action="@{'/product/delete/' + ${product.productId}}"
+        <form th:action="@{/product/delete}"
               method="post"
               style="display:inline;">
+          <input type="hidden"
+                 name="productId"
+                 th:value="${product.productId}" />
           <button type="submit"
-                  class="btn btn-primary btn-sm"
-                  onclick="return confirm('Delete this product?');">
+                  class="btn btn-danger btn-sm">
             Delete
           </button>
         </form>

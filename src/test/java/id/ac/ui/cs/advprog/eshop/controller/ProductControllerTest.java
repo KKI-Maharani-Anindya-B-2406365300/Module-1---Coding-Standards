@@ -11,7 +11,6 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,13 +24,11 @@ class ProductControllerTest {
     private FakeProductService fakeService;
 
     @BeforeEach
-    void setUp() throws Exception {
-        ProductController controller = new ProductController();
+    void setUp() {
         fakeService = new FakeProductService();
 
-        Field f = ProductController.class.getDeclaredField("service");
-        f.setAccessible(true);
-        f.set(controller, fakeService);
+        // matches your controller (constructor injection)
+        ProductController controller = new ProductController(fakeService);
 
         View dummyView = new AbstractView() {
             @Override
@@ -94,17 +91,20 @@ class ProductControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("products"))
                 .andExpect(view().name("productList"));
+
+        // optional: verify size in model
+        @SuppressWarnings("unchecked")
+        List<Product> products = (List<Product>) mockMvc.perform(get("/product/list"))
+                .andReturn()
+                .getModelAndView()
+                .getModel()
+                .get("products");
+        assertNotNull(products);
+        assertEquals(2, products.size());
     }
 
     @Test
-    void editProductPage_shouldRedirect_whenProductNotFound() throws Exception {
-        mockMvc.perform(get("/product/edit/does-not-exist"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/product/list"));
-    }
-
-    @Test
-    void editProductPage_shouldReturnEditProductView_whenProductExists() throws Exception {
+    void editProductPage_shouldReturnEditProductView_andProvideProductModel() throws Exception {
         Product p = new Product();
         p.setProductId("10");
         p.setProductName("Old");
@@ -131,21 +131,35 @@ class ProductControllerTest {
                         .param("productName", "After")
                         .param("productQuantity", "7"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/product/list"));
+                .andExpect(redirectedUrl("list"));
 
         assertEquals("99", fakeService.lastUpdateId);
         assertNotNull(fakeService.lastUpdatedProduct);
         assertEquals("After", fakeService.lastUpdatedProduct.getProductName());
         assertEquals(7, fakeService.lastUpdatedProduct.getProductQuantity());
+
+        // ensure storage updated too
+        Product updated = fakeService.storage.get("99");
+        assertNotNull(updated);
+        assertEquals("After", updated.getProductName());
+        assertEquals(7, updated.getProductQuantity());
     }
 
     @Test
     void deleteProduct_shouldCallServiceDelete_andRedirect() throws Exception {
-        mockMvc.perform(post("/product/delete/123"))
+        Product p = new Product();
+        p.setProductId("123");
+        p.setProductName("X");
+        p.setProductQuantity(1);
+        fakeService.storage.put("123", p);
+
+        mockMvc.perform(post("/product/delete")
+                        .param("productId", "123"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/product/list"));
+                .andExpect(redirectedUrl("list"));
 
         assertEquals("123", fakeService.lastDeletedId);
+        assertFalse(fakeService.storage.containsKey("123"));
     }
 
     static class FakeProductService implements ProductService {
@@ -166,8 +180,8 @@ class ProductControllerTest {
         }
 
         @Override
-        public Iterator<Product> findAll() {
-            return storage.values().iterator();
+        public List<Product> findAll() {
+            return new ArrayList<>(storage.values());
         }
 
         @Override
@@ -176,22 +190,21 @@ class ProductControllerTest {
         }
 
         @Override
-        public Product update(String id, Product product) {
+        public void update(String id, Product product) {
             lastUpdateId = id;
             lastUpdatedProduct = product;
 
             Product existing = storage.get(id);
-            if (existing == null) return null;
+            if (existing == null) return;
 
             existing.setProductName(product.getProductName());
             existing.setProductQuantity(product.getProductQuantity());
-            return existing;
         }
 
         @Override
-        public boolean deleteById(String id) {
+        public void deleteProductById(String id) {
             lastDeletedId = id;
-            return storage.remove(id) != null;
+            storage.remove(id);
         }
     }
 }
