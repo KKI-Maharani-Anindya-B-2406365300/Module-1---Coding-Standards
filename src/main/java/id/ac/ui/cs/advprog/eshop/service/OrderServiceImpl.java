@@ -13,7 +13,6 @@ import java.util.NoSuchElementException;
 public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderRepository orderRepository;
-
     @Override
     public Order createOrder(Order order) {
         if (orderRepository.findById(order.getId()) == null) {
@@ -43,6 +42,4 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> findAllByAuthor(String author) {
         return orderRepository.findAllByAuthor(author);
     }
-
-
 }
