@@ -20,22 +20,12 @@ public class Payment {
         this.paymentData = paymentData;
 
         if (method.equals("VOUCHER_CODE")) {
-            String voucherCode = paymentData.get("voucherCode");
-            if (isValidVoucherCode(voucherCode)) {
-                this.status = "SUCCESS";
-            } else {
-                this.status = "REJECTED";
-            }
+            this.status = validateVoucherCode(paymentData.get("voucherCode"));
         } else if (method.equals("BANK_TRANSFER")) {
-            String bankName = paymentData.get("bankName");
-            String referenceCode = paymentData.get("referenceCode");
-
-            if (bankName == null || bankName.isEmpty() ||
-                    referenceCode == null || referenceCode.isEmpty()) {
-                this.status = "REJECTED";
-            } else {
-                this.status = "SUCCESS";
-            }
+            this.status = validateBankTransfer(
+                    paymentData.get("bankName"),
+                    paymentData.get("referenceCode")
+            );
         } else {
             throw new IllegalArgumentException();
         }
@@ -47,6 +37,21 @@ public class Payment {
         } else {
             throw new IllegalArgumentException();
         }
+    }
+
+    private String validateVoucherCode(String voucherCode) {
+        if (isValidVoucherCode(voucherCode)) {
+            return "SUCCESS";
+        }
+        return "REJECTED";
+    }
+
+    private String validateBankTransfer(String bankName, String referenceCode) {
+        if (bankName == null || bankName.isEmpty() ||
+                referenceCode == null || referenceCode.isEmpty()) {
+            return "REJECTED";
+        }
+        return "SUCCESS";
     }
 
     private boolean isValidVoucherCode(String voucherCode) {
