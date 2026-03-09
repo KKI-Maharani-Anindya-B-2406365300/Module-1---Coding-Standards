@@ -58,6 +58,13 @@ If SOLID principles were not applied in this project, the code would become hard
     4) without ISP, we might create one large service interface containing all methods for every entity. Classes would then be forced to implement methods they do not use, making the design messy and harder to maintain.
     5) without DIP, Controllers would rely directly on specific implementation classes instead of abstractions. As a result, the components would become tightly connected, making the system harder to modify or extend without affecting other parts.
 
+Module 4 
+
+Reflection 1 
+1. Based on Percival (2017), I found the TDD flow quite helpful because writing the tests first helped me understand what each method was supposed to do before implementing the code. It also made it easier to notice mistakes early since I could immediately see whether the implementation passed the tests or not. However, next time I should plan the test scenarios more clearly beforehand so the process can run more smoothly.
+
+2. My tests mostly follow the F.I.R.S.T principle because they run quickly, are independent, and use clear assertions to check the results. Using mocks also helps ensure the tests are repeatable and not dependent on external systems. 
+
 
 
 
