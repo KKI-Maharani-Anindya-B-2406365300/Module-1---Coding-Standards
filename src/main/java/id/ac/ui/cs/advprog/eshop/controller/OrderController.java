@@ -60,6 +60,8 @@ public class OrderController {
         } else if (method.equals("BANK_TRANSFER")) {
             paymentData.put("bankName", requestParams.get("bankName"));
             paymentData.put("referenceCode", requestParams.get("referenceCode"));
+        } else {
+            throw new IllegalArgumentException("Unsupported payment method");
         }
 
         var payment = paymentService.addPayment(order, method, paymentData);

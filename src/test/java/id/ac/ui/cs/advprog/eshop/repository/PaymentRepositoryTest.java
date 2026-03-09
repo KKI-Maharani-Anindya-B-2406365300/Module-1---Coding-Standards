@@ -69,4 +69,44 @@ class PaymentRepositoryTest {
 
         assertEquals(1, result.size());
     }
+    @Test
+    void testFindAllEmpty() {
+        List<Payment> result = paymentRepository.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+    @Test
+    void testFindAllEmptyRepository() {
+        List<Payment> result = paymentRepository.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testSaveMultiplePayments() {
+        paymentRepository.save(payment);
+
+        Payment payment2 = new Payment(payment.getOrder(), "VOUCHER_CODE", Map.of("voucherCode", "ESHOP1111AAAA2222"));
+
+        paymentRepository.save(payment2);
+
+        List<Payment> result = paymentRepository.findAll();
+
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    void testFindByIdWhenMultiplePaymentsExist() {
+        paymentRepository.save(payment);
+
+        Payment payment2 = new Payment(payment.getOrder(), "VOUCHER_CODE", Map.of("voucherCode", "ESHOP1111AAAA2222"));
+        paymentRepository.save(payment2);
+
+        Payment result = paymentRepository.findById(payment2.getId());
+
+        assertEquals(payment2.getId(), result.getId());
+    }
+
 }

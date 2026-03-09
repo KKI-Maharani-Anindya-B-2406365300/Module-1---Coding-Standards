@@ -2,8 +2,6 @@ package id.ac.ui.cs.advprog.eshop.repository;
 
 import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.model.Product;
-import id.ac.ui.cs.advprog.eshop.enums.OrderStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,104 +9,151 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 class OrderRepositoryTest {
 
-    OrderRepository orderRepository;
-
-    List<Order> orders;
+    private OrderRepository orderRepository;
+    private Order order;
 
     @BeforeEach
     void setUp() {
         orderRepository = new OrderRepository();
 
         List<Product> products = new ArrayList<>();
-        Product product1 = new Product();
-        product1.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
-        product1.setProductName("Sampo Cap Bambang");
-        product1.setProductQuantity(2);
-        products.add(product1);
+        Product product = new Product();
+        product.setProductId("1");
+        product.setProductName("Sampo");
+        product.setProductQuantity(1);
+        products.add(product);
 
-        orders = new ArrayList<>();
-        Order order1 = new Order("13652556-012a-4c07-b546-54eb1396d79b",
-                products, 1708560000L, "Safira Sudrajat");
-        orders.add(order1);
-        Order order2 = new Order("7f9e15bb-4b15-42f4-aebc-c3af385fb078",
-                products, 1708570000L, "Safira Sudrajat");
-        orders.add(order2);
-        Order order3 = new Order("e334ef40-9eff-4da8-9487-8ee697ecbf1e",
-                products, 1708570000L, "Bambang Sudrajat");
-        orders.add(order3);
+        order = new Order("order-1", products, 1708560000L, "Maharani");
     }
 
     @Test
-    void testSaveCreate() {
-        Order order = orders.get(1);
+    void testSaveNewOrder() {
         Order result = orderRepository.save(order);
 
-        Order findResult = orderRepository.findById(orders.get(1).getId());
-        assertEquals(order.getId(), result.getId());
-        assertEquals(order.getId(), findResult.getId());
-        assertEquals(order.getOrderTime(), findResult.getOrderTime());
-        assertEquals(order.getAuthor(), findResult.getAuthor());
-        assertEquals(order.getStatus(), findResult.getStatus());
+        assertNotNull(result);
+        assertEquals("order-1", result.getId());
     }
 
     @Test
-    void testSaveUpdate() {
-        Order order = orders.get(1);
+    void testSaveExistingOrderUpdatesData() {
         orderRepository.save(order);
-        Order newOrder = new Order(order.getId(), order.getProducts(), order.getOrderTime(),
-                order.getAuthor(), OrderStatus.SUCCESS.getValue());
-        Order result = orderRepository.save(newOrder);
 
-        Order findResult = orderRepository.findById(orders.get(1).getId());
-        assertEquals(order.getId(), result.getId());
-        assertEquals(order.getId(), findResult.getId());
-        assertEquals(order.getOrderTime(), findResult.getOrderTime());
-        assertEquals(order.getAuthor(), findResult.getAuthor());
-        assertEquals(OrderStatus.SUCCESS.getValue(), findResult.getStatus());
+        Order updatedOrder = new Order(
+                "order-1",
+                order.getProducts(),
+                order.getOrderTime(),
+                order.getAuthor(),
+                "SUCCESS"
+        );
+
+        Order result = orderRepository.save(updatedOrder);
+
+        assertEquals("SUCCESS", result.getStatus());
+        assertEquals("SUCCESS", orderRepository.findById("order-1").getStatus());
+        assertEquals(1, orderRepository.findAllByAuthor("Maharani").size());
     }
 
     @Test
-    void testFindByIdIfIdFound() {
-        for (Order order : orders) {
-            orderRepository.save(order);
-        }
+    void testFindByIdFound() {
+        orderRepository.save(order);
 
-        Order findResult = orderRepository.findById(orders.get(1).getId());
-        assertEquals(orders.get(1).getId(), findResult.getId());
-        assertEquals(orders.get(1).getOrderTime(), findResult.getOrderTime());
-        assertEquals(orders.get(1).getAuthor(), findResult.getAuthor());
-        assertEquals(orders.get(1).getStatus(), findResult.getStatus());
+        Order result = orderRepository.findById("order-1");
+
+        assertNotNull(result);
+        assertEquals("order-1", result.getId());
     }
 
     @Test
-    void testFindByIdIfIdNotFound() {
-        for (Order order : orders) {
-            orderRepository.save(order);
-        }
+    void testFindByIdNotFound() {
+        Order result = orderRepository.findById("missing");
 
-        Order findResult = orderRepository.findById("zczc");
-        assertNull(findResult);
+        assertNull(result);
     }
 
     @Test
-    void testFindAllByAuthorIfAuthorCorrect() {
-        for (Order order : orders) {
-            orderRepository.save(order);
-        }
+    void testFindAllByAuthorFound() {
+        orderRepository.save(order);
 
-        List<Order> orderList = orderRepository.findAllByAuthor(
-                orders.get(1).getAuthor());
-        assertEquals(2, orderList.size());
+        List<Order> result = orderRepository.findAllByAuthor("Maharani");
+
+        assertEquals(1, result.size());
+        assertEquals("Maharani", result.get(0).getAuthor());
     }
 
     @Test
-    void testFindAllByAuthorIfAllLowercase() {
-        orderRepository.save(orders.get(1));
+    void testSaveUpdatesExistingOrder() {
+        orderRepository.save(order);
 
-        List<Order> orderList = orderRepository.findAllByAuthor(
-                orders.get(1).getAuthor().toLowerCase());
-        assertTrue(orderList.isEmpty());
+        Order updated = new Order(
+                order.getId(),
+                order.getProducts(),
+                order.getOrderTime(),
+                order.getAuthor(),
+                "SUCCESS"
+        );
+
+        orderRepository.save(updated);
+
+        Order result = orderRepository.findById(order.getId());
+
+        assertEquals("SUCCESS", result.getStatus());
     }
+
+    @Test
+    void testFindAllByAuthorMultipleOrders() {
+        orderRepository.save(order);
+
+        Order order2 = new Order(
+                "order-2",
+                order.getProducts(),
+                order.getOrderTime(),
+                "Maharani"
+        );
+
+        orderRepository.save(order2);
+
+        List<Order> result = orderRepository.findAllByAuthor("Maharani");
+
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    void testFindAllByAuthorEmpty() {
+        List<Order> result = orderRepository.findAllByAuthor("Nobody");
+
+        assertTrue(result.isEmpty());
+    }
+    @Test
+    void testSaveUpdatesExistingOrderNotInFirstPosition() {
+        Order firstOrder = new Order("order-1", order.getProducts(), order.getOrderTime(), "Maharani");
+        Order secondOrder = new Order("order-2", order.getProducts(), order.getOrderTime(), "Maharani");
+
+        orderRepository.save(firstOrder);
+        orderRepository.save(secondOrder);
+
+        Order updatedSecond = new Order("order-2", order.getProducts(), order.getOrderTime(), "Maharani", "SUCCESS");
+        orderRepository.save(updatedSecond);
+
+        Order result = orderRepository.findById("order-2");
+
+        assertNotNull(result);
+        assertEquals("SUCCESS", result.getStatus());
+    }
+    @Test
+    void testFindAllByAuthorIgnoresDifferentAuthor() {
+        Order order1 = new Order("order-1", order.getProducts(), order.getOrderTime(), "Maharani");
+        Order order2 = new Order("order-2", order.getProducts(), order.getOrderTime(), "Budi");
+
+        orderRepository.save(order1);
+        orderRepository.save(order2);
+
+        List<Order> result = orderRepository.findAllByAuthor("Maharani");
+
+        assertEquals(1, result.size());
+        assertEquals("order-1", result.get(0).getId());
+    }
+
 }

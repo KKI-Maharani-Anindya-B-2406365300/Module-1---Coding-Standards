@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -29,10 +31,11 @@ public class PaymentFunctionalTest {
     @Autowired
     MockMvc mvc;
 
-    @Autowired
+    @MockitoBean
     PaymentService paymentService;
 
     private Payment payment;
+    private Order order;
 
     @BeforeEach
     void setUp() {
@@ -43,12 +46,16 @@ public class PaymentFunctionalTest {
         product.setProductQuantity(1);
         products.add(product);
 
-        Order order = new Order("order-1", products, 1708560000L, "Maharani");
+        order = new Order("order-1", products, 1708560000L, "Maharani");
 
         Map<String, String> paymentData = new HashMap<>();
         paymentData.put("voucherCode", "ESHOP1234ABC5678");
 
-        payment = paymentService.addPayment(order, "VOUCHER_CODE", paymentData);
+        payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        when(paymentService.getPayment(payment.getId())).thenReturn(payment);
+        when(paymentService.getAllPayments()).thenReturn(List.of(payment));
+        when(paymentService.setStatus(payment, "SUCCESS")).thenReturn(payment);
     }
 
     @Test

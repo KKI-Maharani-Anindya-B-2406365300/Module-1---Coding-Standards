@@ -101,4 +101,131 @@ class PaymentTest {
 
         assertThrows(IllegalArgumentException.class, () -> payment.setStatus("MEOW"));
     }
+    @Test
+    void testCreateVoucherPaymentRejectedIfVoucherNull() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", null);
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testCreateVoucherPaymentRejectedIfWrongLength() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ESHOP123");
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testCreateVoucherPaymentRejectedIfWrongPrefix() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "TOKO1234ABC5678");
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testCreateVoucherPaymentRejectedIfDigitCountNotEight() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ESHOP12ABCD345EF");
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testVoucherRejectedIfNull() {
+        Map<String,String> data = new HashMap<>();
+        data.put("voucherCode", null);
+
+        Payment payment = new Payment(order,"VOUCHER_CODE",data);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testVoucherRejectedIfWrongLength() {
+        Map<String,String> data = new HashMap<>();
+        data.put("voucherCode","ESHOP123");
+
+        Payment payment = new Payment(order,"VOUCHER_CODE",data);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testVoucherRejectedIfWrongPrefix() {
+        Map<String,String> data = new HashMap<>();
+        data.put("voucherCode","TOKO1234ABC5678");
+
+        Payment payment = new Payment(order,"VOUCHER_CODE",data);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testCreatePaymentWithUnsupportedMethodThrowsException() {
+        Map<String, String> paymentData = new HashMap<>();
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Payment(order, "CASH", paymentData);
+        });
+    }
+    @Test
+    void testCreateBankTransferRejectedIfBankNameNull() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("bankName", null);
+        paymentData.put("referenceCode", "REF123");
+
+        Payment payment = new Payment(order, "BANK_TRANSFER", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testCreateBankTransferRejectedIfReferenceCodeEmpty() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("bankName", "BCA");
+        paymentData.put("referenceCode", "");
+
+        Payment payment = new Payment(order, "BANK_TRANSFER", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+    @Test
+    void testVoucherRejectedIfDigitCountNotEight() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ESHOPABCD1234567");
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+    @Test
+    void testVoucherRejectedIfWrongPrefixButLengthIsCorrect() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ABCDE1234ABC5678"); // 16 chars, not ESHOP
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
+
+    @Test
+    void testVoucherRejectedIfDigitCountIsNotEight() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ESHOPABCD1234567"); // 16 chars, starts ESHOP, only 7 digits
+
+        Payment payment = new Payment(order, "VOUCHER_CODE", paymentData);
+
+        assertEquals("REJECTED", payment.getStatus());
+    }
 }

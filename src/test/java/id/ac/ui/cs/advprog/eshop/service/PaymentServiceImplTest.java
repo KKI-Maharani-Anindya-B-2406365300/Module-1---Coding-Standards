@@ -95,4 +95,26 @@ class PaymentServiceImplTest {
 
         assertEquals(1, results.size());
     }
+    @Test
+    void testSetStatusInvalidThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            paymentService.setStatus(payment, "MEOW");
+        });
+    }
+    @Test
+    void testSetStatusOtherStatusDoesNotUpdateOrder() {
+        Payment mockedPayment = mock(Payment.class);
+        Order mockedOrder = mock(Order.class);
+
+        doNothing().when(mockedPayment).setStatus("PENDING");
+        when(mockedPayment.getOrder()).thenReturn(mockedOrder);
+
+        Payment result = paymentService.setStatus(mockedPayment, "PENDING");
+
+        assertEquals(mockedPayment, result);
+        verify(mockedPayment).setStatus("PENDING");
+        verify(mockedPayment).getOrder();
+        verify(mockedOrder, never()).setStatus("SUCCESS");
+        verify(mockedOrder, never()).setStatus("FAILED");
+    }
 }
