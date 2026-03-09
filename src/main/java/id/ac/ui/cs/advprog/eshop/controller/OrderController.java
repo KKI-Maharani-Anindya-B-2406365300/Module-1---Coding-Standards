@@ -55,9 +55,9 @@ public class OrderController {
 
         Map<String, String> paymentData = new HashMap<>();
 
-        if (method.equals("VOUCHER_CODE")) {
+        if ("VOUCHER_CODE".equals(method)) {
             paymentData.put("voucherCode", requestParams.get("voucherCode"));
-        } else if (method.equals("BANK_TRANSFER")) {
+        } else if ("BANK_TRANSFER".equals(method)) {
             paymentData.put("bankName", requestParams.get("bankName"));
             paymentData.put("referenceCode", requestParams.get("referenceCode"));
         } else {

@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eshop.enums;
 
-
 import lombok.Getter;
 
 @Getter
@@ -12,12 +11,12 @@ public enum OrderStatus {
 
     private final String value;
 
-    private OrderStatus(String value) {
+    OrderStatus(String value) {
         this.value = value;
     }
 
     public static boolean contains(String param) {
-        for (OrderStatus orderStatus : OrderStatus.values()) {
+        for (OrderStatus orderStatus : values()) {   // remove OrderStatus.
             if (orderStatus.name().equals(param)) {
                 return true;
             }
