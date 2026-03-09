@@ -19,9 +19,9 @@ public class Payment {
         this.method = method;
         this.paymentData = paymentData;
 
-        if ("VOUCHER_CODE".equals(method)) {
+        if (method.equals("VOUCHER_CODE")) {
             this.status = validateVoucherCode(paymentData.get("voucherCode"));
-        } else if ("BANK_TRANSFER".equals(method)) {
+        } else if (method.equals("BANK_TRANSFER")) {
             this.status = validateBankTransfer(
                     paymentData.get("bankName"),
                     paymentData.get("referenceCode")
@@ -32,7 +32,7 @@ public class Payment {
     }
 
     public void setStatus(String status) {
-        if ("SUCCESS".equals(status) || "REJECTED".equals(status)) {
+        if (status.equals("SUCCESS") || status.equals("REJECTED")) {
             this.status = status;
         } else {
             throw new IllegalArgumentException();
