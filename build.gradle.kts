@@ -61,6 +61,7 @@ tasks.register<Test>("functionalTest") {
         includeTestsMatching("*FunctionalTest")
     }
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.withType<Test>().configureEach {
@@ -78,9 +79,17 @@ tasks.test {
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-}
+    dependsOn(tasks.test, tasks.named("functionalTest"))
 
+    executionData.setFrom(
+        fileTree(layout.buildDirectory) {
+            include(
+                "jacoco/test.exec",
+                "jacoco/functionalTest.exec"
+            )
+        }
+    )
+}
 
 
 
